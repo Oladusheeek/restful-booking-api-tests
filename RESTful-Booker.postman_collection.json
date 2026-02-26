@@ -8,7 +8,7 @@
   },
   "item": [
     {
-      "name": "Auth",
+      "name": "Happy path",
       "item": [
         {
           "name": "Ping request",
@@ -25,6 +25,17 @@
                   "    var jsonData = pm.response.text();\r",
                   "    pm.expect(jsonData).to.eql(\"Created\");\r",
                   "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.set(\"responseTimeLimit\", 800)"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -63,15 +74,22 @@
                   "    pm.expect(jsonData.token).to.be.a(\"string\")\r",
                   "})\r",
                   "\r",
-                  "pm.test(\"Response time is less than 900ms\", function () { //since it is a first request than it might take longer\r",
-                  "    pm.expect(pm.response.responseTime).to.be.below(900);\r",
-                  "})\r",
-                  "\r",
                   "pm.test(\"Save token to variables\", function () {\r",
                   "    var jsonData = pm.response.json();\r",
                   "    pm.expect(jsonData.token).to.be.a(\"string\");\r",
                   "    pm.environment.set(\"authToken\", jsonData.token)\r",
                   "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.unset(\"responseTimeLimit\");"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -102,12 +120,7 @@
             }
           },
           "response": []
-        }
-      ]
-    },
-    {
-      "name": "Booking CRUD",
-      "item": [
+        },
         {
           "name": "Create Booking",
           "event": [
@@ -130,8 +143,6 @@
                   "    pm.expect(jsonData.booking.firstname).to.eql(requestBody.firstname)",
                   "})",
                   "",
-                  "pm.expect(pm.response.responseTime).to.be.below(500);",
-                  "",
                   "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_POST\"))",
                   "",
                   "pm.test(\"JSON validation schema\", function () {",
@@ -147,19 +158,7 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "const moment = require('moment')\r",
-                  "\r",
-                  "const daysUntilCheckin = Math.floor(Math.random()*10)+1;\r",
-                  "const stayDuration = Math.floor(Math.random*14)+1;\r",
-                  "\r",
-                  "const checkinDate = moment().add(daysUntilCheckin, 'days').format(\"YYYY-MM-DD\");\r",
-                  "const checkoutDate = moment(checkinDate).add(stayDuration, 'days').format(\"YYYY-MM-DD\");\r",
-                  "\r",
-                  "const price = Math.floor(Math.random() * 1400) + 100;\r",
-                  "\r",
-                  "pm.variables.set(\"dynamic_checkin\", checkinDate);\r",
-                  "pm.variables.set(\"dynamic_checkout\", checkoutDate);\r",
-                  "pm.variables.set(\"dynamic_price\", price);"
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -218,9 +217,10 @@
                   "    pm.response.to.have.status(200);\r",
                   "})\r",
                   "\r",
-                  "pm.test(\"Name is Alex\", function() {\r",
+                  "pm.test(\"Check first name is correct\", function() {\r",
                   "    var jsonData = pm.response.json();\r",
-                  "    pm.expect(jsonData.firstname).to.eql(\"Alex\");\r",
+                  "    var expectedName = JSON.parse(pm.request.body.raw).firstname\r",
+                  "    pm.expect(jsonData.firstname).to.eql(expectedName);\r",
                   "})\r",
                   "\r",
                   "pm.expect(pm.response.responseTime).to.be.below(500);\r",
@@ -263,7 +263,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"Alex\",\r\n    \"lastname\" : \"Brown\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"2018-01-01\",\r\n        \"checkout\" : \"2019-01-01\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : {{dynamic_price}},\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{dynamic_checkin}}\",\r\n        \"checkout\" : \"{{dynamic_checkout}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -280,6 +280,83 @@
                 "{{bookingID}}"
               ]
             }
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update - NaN date Bug Copy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.expect(pm.response.code).to.eql(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Date has right format\", function() {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
+                  "})\r",
+                  "\r",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"));\r",
+                  "\r",
+                  "pm.test(\"Response body mathches schema\", function() {\r",
+                  "    pm.response.to.have.jsonSchema(schema);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{dynamic_checkin}}\",\r\n        \"checkout\" : \"{{dynamic_checkout}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            },
+            "description": "# **Bug description:**\n\nSending empte strings in fields \"checkin\" and \"checkout\" via PATCH method that includes object:\n\n### _Payload sent_\n\n`\"bookingdates\":{\"checkin\":\"\",\"checkout\":\"\"}`\n\n### _Expected result_\n\nExpect server to return status code 400 - Bad request.\n\n### _Actual result_\n\nHowever, server returns _200 OK_ and saves corrupt data with NaNs:  \n`\"bookingdates\": { \"checkin\": \"0NaN-aN-aN\", \"checkout\": \"0NaN-aN-aN\" }`"
           },
           "response": []
         },
@@ -380,7 +457,19 @@
             "packages": {},
             "requests": {},
             "exec": [
-              ""
+              "const moment = require('moment')\r",
+              "\r",
+              "const daysUntilCheckin = Math.floor(Math.random()*10)+1;\r",
+              "const stayDuration = Math.floor(Math.random*14)+1;\r",
+              "\r",
+              "const checkinDate = moment().add(daysUntilCheckin, 'days').format(\"YYYY-MM-DD\");\r",
+              "const checkoutDate = moment(checkinDate).add(stayDuration, 'days').format(\"YYYY-MM-DD\");\r",
+              "\r",
+              "const price = Math.floor(Math.random() * 1400) + 100;\r",
+              "\r",
+              "pm.variables.set(\"dynamic_checkin\", checkinDate);\r",
+              "pm.variables.set(\"dynamic_checkout\", checkoutDate);\r",
+              "pm.variables.set(\"dynamic_price\", price);"
             ]
           }
         },
@@ -391,9 +480,11 @@
             "packages": {},
             "requests": {},
             "exec": [
-              "pm.test(\"Response time is less than 300ms\", function() {\r",
-              "    pm.expect(pm.response.responseTime).to.be.below(300);\r",
-              "})"
+              "const responseTimeLimit = pm.variables.get(\"responseTimeLimit\") || 300; //variable value or default 300\r",
+              "\r",
+              "pm.test(`Response time is less than ${responseTimeLimit}ms`, function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(responseTimeLimit);\r",
+              "});"
             ]
           }
         }
@@ -634,7 +725,7 @@
       ]
     },
     {
-      "name": "Partial Update - Bad data",
+      "name": "NaN date Bug",
       "item": [
         {
           "name": "Partial Update - NaN date Bug",
@@ -652,6 +743,12 @@
                   "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
                   "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
                   "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
+                  "})\r",
+                  "\r",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"))\r",
+                  "\r",
+                  "pm.test(\"JSON validation schema\", function() {\r",
+                  "    pm.response.to.have.jsonSchema(schema)\r",
                   "})"
                 ],
                 "type": "text/javascript",
@@ -704,6 +801,111 @@
               ]
             },
             "description": "# **Bug description:**\n\nSending empte strings in fields \"checkin\" and \"checkout\" via PATCH method that includes object:\n\n### _Payload sent_\n\n`\"bookingdates\":{\"checkin\":\"\",\"checkout\":\"\"}`\n\n### _Expected result_\n\nExpect server to return status code 400 - Bad request.\n\n### _Actual result_\n\nHowever, server returns _200 OK_ and saves corrupt data with NaNs:  \n`\"bookingdates\": { \"checkin\": \"0NaN-aN-aN\", \"checkout\": \"0NaN-aN-aN\" }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Booking - NaN date Bug",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Save ID to variables\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"bookingID\", jsonData.bookingid);",
+                  "});",
+                  "",
+                  "pm.test(\"Check first name is correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var requestBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(requestBody.firstname)",
+                  "})",
+                  "",
+                  "pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_POST\"))",
+                  "",
+                  "pm.test(\"JSON validation schema\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"))",
+                  "",
+                  "pm.test(\"JSON validation schema\", function() {",
+                  "    pm.response.to.have.jsonSchema(schema)",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const moment = require('moment')\r",
+                  "\r",
+                  "const daysUntilCheckin = Math.floor(Math.random()*10)+1;\r",
+                  "const stayDuration = Math.floor(Math.random*14)+1;\r",
+                  "\r",
+                  "const checkinDate = moment().add(daysUntilCheckin, 'days').format(\"YYYY-MM-DD\");\r",
+                  "const checkoutDate = moment(checkinDate).add(stayDuration, 'days').format(\"YYYY-MM-DD\");\r",
+                  "\r",
+                  "const price = Math.floor(Math.random() * 1400) + 100;\r",
+                  "\r",
+                  "pm.variables.set(\"dynamic_checkin\", checkinDate);\r",
+                  "pm.variables.set(\"dynamic_checkout\", checkoutDate);\r",
+                  "pm.variables.set(\"dynamic_price\", price);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : {{dynamic_price}},\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"\",\r\n        \"checkout\" : \"\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
           },
           "response": []
         }
