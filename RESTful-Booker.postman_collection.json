@@ -1,15 +1,52 @@
 {
   "info": {
-    "_postman_id": "9f0da460-abba-4140-8817-3b3dbafbf2ac",
+    "_postman_id": "2402343a-b468-4851-ab84-a33c8a397f44",
     "name": "RESTful-Booker",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "51402512",
-    "_collection_link": "https://go.postman.co/collection/51402512-9f0da460-abba-4140-8817-3b3dbafbf2ac?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/51402512-2402343a-b468-4851-ab84-a33c8a397f44?source=collection_link"
   },
   "item": [
     {
       "name": "Auth",
       "item": [
+        {
+          "name": "Ping request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function() {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Response body is - 'Created'\", function() {\r",
+                  "    var jsonData = pm.response.text();\r",
+                  "    pm.expect(jsonData).to.eql(\"Created\");\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            }
+          },
+          "response": []
+        },
         {
           "name": "Get Token",
           "event": [
@@ -26,8 +63,8 @@
                   "    pm.expect(jsonData.token).to.be.a(\"string\")\r",
                   "})\r",
                   "\r",
-                  "pm.test(\"Response time is less than 200ms\", function () {\r",
-                  "    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+                  "pm.test(\"Response time is less than 900ms\", function () { //since it is a first request than it might take longer\r",
+                  "    pm.expect(pm.response.responseTime).to.be.below(900);\r",
                   "})\r",
                   "\r",
                   "pm.test(\"Save token to variables\", function () {\r",
@@ -88,8 +125,9 @@
                   "});",
                   "",
                   "pm.test(\"Check first name is correct\", function () {",
-                  "    var jsonData = pm.response.json()",
-                  "    pm.expect(jsonData.booking.firstname).to.eql(\"Jim\")",
+                  "    var jsonData = pm.response.json();",
+                  "    var requestBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(requestBody.firstname)",
                   "})",
                   "",
                   "pm.expect(pm.response.responseTime).to.be.below(500);",
@@ -115,7 +153,7 @@
                   "const stayDuration = Math.floor(Math.random*14)+1;\r",
                   "\r",
                   "const checkinDate = moment().add(daysUntilCheckin, 'days').format(\"YYYY-MM-DD\");\r",
-                  "const checkoutDate = moment(checkinDate+stayDuration, 'days').format(\"YYYY-MM-DD\");\r",
+                  "const checkoutDate = moment(checkinDate).add(stayDuration, 'days').format(\"YYYY-MM-DD\");\r",
                   "\r",
                   "const price = Math.floor(Math.random() * 1400) + 100;\r",
                   "\r",
@@ -333,11 +371,124 @@
           },
           "response": []
         }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "pm.test(\"Response time is less than 300ms\", function() {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+              "})"
+            ]
+          }
+        }
       ]
     },
     {
-      "name": "Negative Booking",
+      "name": "Negative Tests",
       "item": [
+        {
+          "name": "Get Token - No username",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Response body contains 'Bad credentials'\", function () {\r",
+                  "    pm.expect(pm.response.json().reason).to.eql(\"Bad credentials\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"password\" : \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "description": "# **Inconsistent error handling:**\n\nAPI uses different formats of handling bad requests on one method\n\nIn **POST Auth** method if client sent request with body  \n`{ \"username\": \"admin\" }`  \nand did not send field password handling of error is within REST standarts and server responses with **400 - Bad request**\n\nHowever, if client sent request with body  \n`{ \"password\" : \"password123\" }`  \nhandling of error is inconsistent: server responds with **200 OK** status and returns body:  \n`{ \"reason\" : \"Bad credentials\" }`\n\n### Right handling\n\nIn both scenarios server obligied to return a standardized error object with a 4xx status code"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Token - No password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 bad request\", function () {\r",
+                  "    pm.response.to.have.status(400);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\" : \"admin\",\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "response": []
+        },
         {
           "name": "Update without token",
           "event": [
@@ -479,6 +630,108 @@
             }
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "Partial Update - Bad data",
+      "item": [
+        {
+          "name": "Partial Update - NaN date Bug",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.expect(pm.response.code).to.eql(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Date has right format\", function() {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"Alex\",\r\n    \"lastname\" : \"Brown\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"\",\r\n        \"checkout\" : \"\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            },
+            "description": "# **Bug description:**\n\nSending empte strings in fields \"checkin\" and \"checkout\" via PATCH method that includes object:\n\n### _Payload sent_\n\n`\"bookingdates\":{\"checkin\":\"\",\"checkout\":\"\"}`\n\n### _Expected result_\n\nExpect server to return status code 400 - Bad request.\n\n### _Actual result_\n\nHowever, server returns _200 OK_ and saves corrupt data with NaNs:  \n`\"bookingdates\": { \"checkin\": \"0NaN-aN-aN\", \"checkout\": \"0NaN-aN-aN\" }`"
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "pm.test(\"Response time is less than 300ms\", function() {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+              "});"
+            ]
+          }
         }
       ]
     }
