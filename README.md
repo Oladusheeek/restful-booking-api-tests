@@ -4,8 +4,8 @@ Also, I will document all the bugs that will be found in this API both on Jira a
 
 
 
-## **Found bugs section**
-### Authorization: Incosistent handling of errors
+# **Found bugs section**
+## Authorization: Incosistent handling of errors
 API uses different formats of handling bad requests on one method
 In **POST Auth method** if client sent request with body
 `{ "username": "admin" }`
@@ -13,8 +13,7 @@ and did not send field password handling of error is within REST standarts and s
 
 However, if client sent request with body
 `{ "password" : "password123" }`
-handling of error is inconsistent: server responds with **200 OK** status and returns body:
+handling of error is inconsistent: server responds with **200 - OK** status and returns body:
 `{ "reason" : "Bad credentials" }`
-**Right handling**
+### Right handling
 In both scenarios server obligied to return a standardized error object with a **4xx** status code
-
