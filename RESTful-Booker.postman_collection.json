@@ -284,7 +284,7 @@
           "response": []
         },
         {
-          "name": "Partial Update - NaN date Bug Copy",
+          "name": "Partial Update",
           "event": [
             {
               "listen": "test",
@@ -931,6 +931,462 @@
             "exec": [
               "pm.test(\"Response time is less than 300ms\", function() {\r",
               "    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DDT",
+      "item": [
+        {
+          "name": "Get Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Response is string\", function() {\r",
+                  "    var jsonData = pm.response.json()\r",
+                  "    pm.expect(jsonData.token).to.be.a(\"string\")\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Save token to variables\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.token).to.be.a(\"string\");\r",
+                  "    pm.environment.set(\"authToken\", jsonData.token)\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.unset(\"responseTimeLimit\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\" : \"admin\",\r\n    \"password\" : \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const testName = pm.iterationData.get(\"test_case\")",
+                  "const expectedStatus = pm.iterationData.get(\"expected_status\")",
+                  "",
+                  "pm.test(`Case: ${testName} | Expected status: ${expectedStatus}`, function () {",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "})",
+                  "",
+                  "pm.test(\"Save ID to variables\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"bookingID\", jsonData.bookingid);",
+                  "});",
+                  "",
+                  "pm.test(\"Check first name is correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var requestBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(requestBody.firstname)",
+                  "})",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_POST\"))",
+                  "",
+                  "pm.test(\"JSON validation schema\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "pm.test(\"Date has right format\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;",
+                  "    pm.expect(jsonData.booking.bookingdates.checkin).to.match(dateRegex);",
+                  "    pm.expect(jsonData.booking.bookingdates.checkout).to.match(dateRegex);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : {{dynamic_price}},\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const testName = pm.iterationData.get(\"test_case\")\r",
+                  "const expectedStatus = pm.iterationData.get(\"expected_status\")\r",
+                  "\r",
+                  "pm.test(`Test case: ${testName} | Expected status: ${expectedStatus}`, function() {\r",
+                  "    pm.response.to.have.status(expectedStatus);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Check first name is correct\", function() {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var expectedName = JSON.parse(pm.request.body.raw).firstname\r",
+                  "    pm.expect(jsonData.firstname).to.eql(expectedName);\r",
+                  "})\r",
+                  "\r",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"))\r",
+                  "\r",
+                  "pm.test(\"JSON validation schema\", function() {\r",
+                  "    pm.response.to.have.jsonSchema(schema)\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Date has right format\", function() {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : {{dynamic_price}},\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const testName = pm.iterationData.get(\"test_case\");\r",
+                  "const expectedStatus = pm.iterationData.get(\"expected_status\");\r",
+                  "\r",
+                  "pm.test(`Case: ${testName} | Expected status: ${expectedStatus}`, function() {\r",
+                  "    pm.response.to.have.status(expectedStatus);\r",
+                  "})\r",
+                  "\r",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"));\r",
+                  "\r",
+                  "pm.test(\"Response body mathches schema\", function() {\r",
+                  "    pm.response.to.have.jsonSchema(schema);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Date has right format\", function() {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            },
+            "description": "# **Bug description:**\n\nSending empte strings in fields \"checkin\" and \"checkout\" via PATCH method that includes object:\n\n### _Payload sent_\n\n`\"bookingdates\":{\"checkin\":\"\",\"checkout\":\"\"}`\n\n### _Expected result_\n\nExpect server to return status code 400 - Bad request.\n\n### _Actual result_\n\nHowever, server returns _200 OK_ and saves corrupt data with NaNs:  \n`\"bookingdates\": { \"checkin\": \"0NaN-aN-aN\", \"checkout\": \"0NaN-aN-aN\" }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function() {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ensure deletion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function() {\r",
+                  "    pm.response.to.have.status(404);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "const moment = require('moment')\r",
+              "\r",
+              "const daysUntilCheckin = Math.floor(Math.random()*10)+1;\r",
+              "const stayDuration = Math.floor(Math.random*14)+1;\r",
+              "\r",
+              "const checkinDate = moment().add(daysUntilCheckin, 'days').format(\"YYYY-MM-DD\");\r",
+              "const checkoutDate = moment(checkinDate).add(stayDuration, 'days').format(\"YYYY-MM-DD\");\r",
+              "\r",
+              "const price = Math.floor(Math.random() * 1400) + 100;\r",
+              "\r",
+              "pm.variables.set(\"dynamic_checkin\", checkinDate);\r",
+              "pm.variables.set(\"dynamic_checkout\", checkoutDate);\r",
+              "pm.variables.set(\"dynamic_price\", price);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "const responseTimeLimit = pm.variables.get(\"responseTimeLimit\") || 300; //variable value or default 300\r",
+              "\r",
+              "pm.test(`Response time is less than ${responseTimeLimit}ms`, function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(responseTimeLimit);\r",
               "});"
             ]
           }

@@ -1,0 +1,26 @@
+[
+  {
+    "test_case": "Valid dates - successful update",
+    "checkin_date": "2026-05-01",
+    "checkout_date": "2026-05-15",
+    "expected_status": 200
+  },
+  {
+    "test_case": "Empty dates - expecting validation error (BUG)",
+    "checkin_date": "",
+    "checkout_date": "",
+    "expected_status": 400
+  },
+  {
+    "test_case": "Invalid format - random string",
+    "checkin_date": "not-a-date",
+    "checkout_date": "not-a-date",
+    "expected_status": 400
+  },
+  {
+    "test_case": "Logical error - checkout before checkin",
+    "checkin_date": "2026-06-20",
+    "checkout_date": "2026-06-10",
+    "expected_status": 400
+  }
+]
