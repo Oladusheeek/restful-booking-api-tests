@@ -1421,12 +1421,12 @@
   "variable": [
     {
       "key": "booking_schema_POST",
-      "value": "",
+      "value": "{\n    \"type\": \"object\",\n    \"properties\": {\n        \"bookingid\": { \"type\": \"number\" },\n        \"booking\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"firstname\": { \"type\": \"string\" },\n                \"lastname\": { \"type\": \"string\" },\n                \"totalprice\": { \"type\": \"number\" },\n                \"depositpaid\": { \"type\": \"boolean\" },\n                \"bookingdates\": {\n                    \"type\": \"object\",\n                    \"properties\": {\n                        \"checkin\": { \"type\": \"string\" },\n                        \"checkout\": { \"type\": \"string\" }\n                    },\n                    \"required\": [\"checkin\", \"checkout\"]\n                },\n                \"additionalneeds\": { \"type\": \"string\" }\n            },\n            \"required\": [\"firstname\", \"lastname\", \"totalprice\", \"depositpaid\", \"bookingdates\"]\n        }\n    },\n    \"required\": [\"bookingid\", \"booking\"]\n}",
       "description": "POST method response has a wrapper \"booking\""
     },
     {
       "key": "booking_schema_PUT/PATCH",
-      "value": ""
+      "value": "{\n    \"type\": \"object\",\n    \"properties\": {\n        \"firstname\": { \"type\": \"string\" },\n        \"lastname\": { \"type\": \"string\" },\n        \"totalprice\": { \"type\": \"number\" },\n        \"depositpaid\": { \"type\": \"boolean\" },\n        \"bookingdates\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"checkin\": { \"type\": \"string\" },\n                \"checkout\": { \"type\": \"string\" }\n            },\n            \"required\": [\"checkin\", \"checkout\"]\n        },\n        \"additionalneeds\": { \"type\": \"string\" }\n    },\n    \"required\": [\"firstname\", \"lastname\", \"totalprice\", \"depositpaid\", \"bookingdates\"]\n}"
     }
   ]
 }
