@@ -5,7 +5,7 @@ Also, I will document all the bugs that will be found in this API both on Jira a
 
 
 # **Found bugs section**
-## Authorization: Incosistent handling of errors
+## Design issue: Incosistent handling of errors in authorization module
 API uses different formats of handling bad requests on one method
 In **POST Auth method** if client sent request with body
 `{ "username": "admin" }`
@@ -18,8 +18,8 @@ handling of error is inconsistent: server responds with **200 - OK** status and 
 ### Right handling
 In both scenarios server obligied to return a standardized error object with a **4xx** status code
 
-## Bug: NaN date
-Sending empte strings in fields "checkin" and "checkout" via **PATCH, POST or PUT** methods that includes object:
+## Bug: Invalid date format - empty strings
+Sending empty strings in fields "checkin" and "checkout" via **PATCH, POST or PUT** methods that includes object:
 
 ### Payload sent
 `"bookingdates":{"checkin":"","checkout":""}`
@@ -31,6 +31,7 @@ However, server returns **200 - OK** and saves corrupt data with NaNs:
 
 
 ## Bug: Checkout before checkin
+Sending request via **POST, PATCH, PUT** where checkout date is before checkin date returns 200 and saves corrupt data
 ### Payload sent
 `{  "checkin_date": "2026-06-20", "checkout_date": "2026-06-10"  }`
 ### Expected result
@@ -42,4 +43,25 @@ However, server returns **200 - OK** and saves corrupt booking:
                 "checkin": "2026-06-20",
                 "checkout": "2026-06-10"
             },
+```
+
+## Bug: Invalid date format - not YYYY-MM-DD
+Sending request via **POST, PATCH, PUT** where dates are strings that are not having format "YYYY-MM-DD" returns 200 and saves corrupt data.
+Moreover, server attempts to convert date in YYYY-MM-DD format that leads to high risks of data corruption due to date ambiguity.
+### Payload sent
+```
+"bookingdates": {
+        "checkin": "06-20-2026",
+        "checkout": "30-06-2026"
+    },
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking:
+```
+    "bookingdates": {
+        "checkin": "2026-06-20",
+        "checkout": "0NaN-aN-aN"
+    },
 ```
