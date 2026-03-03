@@ -65,3 +65,23 @@ However, server returns **200 - OK** and saves corrupt booking:
         "checkout": "0NaN-aN-aN"
     },
 ```
+
+## Bug: Invalid date format - random strings
+Sending request via **POST, PATCH, PUT** where dates are random strings returns 200 and saves corrupt data.
+### Payload sent
+```
+    "bookingdates": {
+        "checkin": "not-a-date",
+        "checkout": "not-a-date"
+    },
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking:
+```
+    "bookingdates": {
+        "checkin": "0NaN-aN-aN",
+        "checkout": "0NaN-aN-aN"
+    },
+```
