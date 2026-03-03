@@ -938,7 +938,7 @@
       ]
     },
     {
-      "name": "DDT",
+      "name": "DDT - Create + Patch",
       "item": [
         {
           "name": "Get Token",
@@ -1039,7 +1039,11 @@
                   "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;",
                   "    pm.expect(jsonData.booking.bookingdates.checkin).to.match(dateRegex);",
                   "    pm.expect(jsonData.booking.bookingdates.checkout).to.match(dateRegex);",
-                  "});"
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json(); // saving for PATCH",
+                  "pm.environment.set(\"saved_totalprice\", jsonData.booking.totalprice);",
+                  "pm.environment.set(\"saved_depositpaid\", jsonData.booking.depositpaid);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1099,91 +1103,6 @@
           "response": []
         },
         {
-          "name": "Update Booking",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const testName = pm.iterationData.get(\"test_case\")\r",
-                  "const expectedStatus = pm.iterationData.get(\"expected_status\")\r",
-                  "\r",
-                  "pm.test(`Test case: ${testName} | Expected status: ${expectedStatus}`, function() {\r",
-                  "    pm.response.to.have.status(expectedStatus);\r",
-                  "})\r",
-                  "\r",
-                  "pm.test(\"Check first name is correct\", function() {\r",
-                  "    var jsonData = pm.response.json();\r",
-                  "    var expectedName = JSON.parse(pm.request.body.raw).firstname\r",
-                  "    pm.expect(jsonData.firstname).to.eql(expectedName);\r",
-                  "})\r",
-                  "\r",
-                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"))\r",
-                  "\r",
-                  "pm.test(\"JSON validation schema\", function() {\r",
-                  "    pm.response.to.have.jsonSchema(schema)\r",
-                  "})\r",
-                  "\r",
-                  "pm.test(\"Date has right format\", function() {\r",
-                  "    var jsonData = pm.response.json();\r",
-                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
-                  "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
-                  "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
-                  "})"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "protocolProfileBehavior": {
-            "disabledSystemHeaders": {
-              "accept": true
-            }
-          },
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Cookie",
-                "value": "token={{authToken}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : {{dynamic_price}},\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/booking/{{bookingID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "booking",
-                "{{bookingID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Partial Update",
           "event": [
             {
@@ -1197,6 +1116,10 @@
                   "    pm.response.to.have.status(expectedStatus);\r",
                   "})\r",
                   "\r",
+                  "pm.test(\"Additional needs changed to 'Option 2'\", function (){\r",
+                  "    pm.expect(pm.response.json().additionalneeds).to.eql(\"Option 2\");\r",
+                  "})\r",
+                  "\r",
                   "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"));\r",
                   "\r",
                   "pm.test(\"Response body mathches schema\", function() {\r",
@@ -1208,7 +1131,14 @@
                   "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
                   "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
                   "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
-                  "})"
+                  "})\r",
+                  "\r",
+                  "var jsonData = pm.response.json()\r",
+                  "pm.expect(jsonData.bookingdates.checkin).to.eql(pm.iterationData.get(\"checkin_date\"));\r",
+                  "pm.expect(jsonData.bookingdates.checkout).to.eql(pm.iterationData.get(\"checkout_date\"));\r",
+                  "\r",
+                  "pm.expect(jsonData.totalprice).to.eql(pm.collectionVariables.get(\"saved_totalprice\"));\r",
+                  "pm.expect(jsonData.depositpaid).to.eql(pm.collectionVariables.get(\"saved_depositpaid\"));"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1242,7 +1172,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Option 2\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1260,94 +1190,6 @@
               ]
             },
             "description": "# **Bug description:**\n\nSending empte strings in fields \"checkin\" and \"checkout\" via PATCH method that includes object:\n\n### _Payload sent_\n\n`\"bookingdates\":{\"checkin\":\"\",\"checkout\":\"\"}`\n\n### _Expected result_\n\nExpect server to return status code 400 - Bad request.\n\n### _Actual result_\n\nHowever, server returns _200 OK_ and saves corrupt data with NaNs:  \n`\"bookingdates\": { \"checkin\": \"0NaN-aN-aN\", \"checkout\": \"0NaN-aN-aN\" }`"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete booking",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function() {\r",
-                  "    pm.response.to.have.status(201);\r",
-                  "})"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Cookie",
-                "value": "token={{authToken}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/booking/{{bookingID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "booking",
-                "{{bookingID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Ensure deletion",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 404\", function() {\r",
-                  "    pm.response.to.have.status(404);\r",
-                  "})"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "protocolProfileBehavior": {
-            "disabledSystemHeaders": {
-              "accept": true
-            }
-          },
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/booking/{{bookingID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "booking",
-                "{{bookingID}}"
-              ]
-            }
           },
           "response": []
         }
