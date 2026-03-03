@@ -18,6 +18,12 @@
     "expected_status": 400
   },
   {
+    "test_case": "Invalid format - not YYYY-MM-DD",
+    "checkin_date": "06-20-2026",
+    "checkout_date": "30-06-2026",
+    "expected_status": 400
+  },
+  {
     "test_case": "Logical error - checkout before checkin",
     "checkin_date": "2026-06-20",
     "checkout_date": "2026-06-10",
