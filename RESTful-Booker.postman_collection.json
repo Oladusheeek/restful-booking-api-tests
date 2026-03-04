@@ -1194,8 +1194,8 @@
                   "})\r",
                   "\r",
                   "var jsonData = pm.response.json(); // saving for PATCH\r",
-                  "pm.environment.set(\"saved_totalprice\", jsonData.booking.totalprice);\r",
-                  "pm.environment.set(\"saved_depositpaid\", jsonData.booking.depositpaid);"
+                  "pm.environment.set(\"saved_totalprice\", jsonData.totalprice);\r",
+                  "pm.environment.set(\"saved_depositpaid\", jsonData.depositpaid);"
                 ],
                 "type": "text/javascript",
                 "packages": {},
