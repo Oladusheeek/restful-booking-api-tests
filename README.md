@@ -107,6 +107,26 @@ However, server returns **200 - OK** and saves corrupt booking:
     },
 ```
 
+## Desing issue: Invalid date format - zero duration
+Sending request via **POST, PATCH, PUT** where checkin date is on the same day as checkout date returns 200 and saves corrupt booking
+### Payload sent
+```
+    "bookingdates": {
+        "checkin": "2026-05-01",
+        "checkout": "2026-05-01"
+    },
+```
+### Expected result 
+Expect server to return status code **400 - Bad request**
+### Actual result
+Server returns **200 - OK** and saves corrupt booking
+```
+    "bookingdates": {
+        "checkin": "2026-05-01",
+        "checkout": "2026-05-01"
+    },
+```
+
 ## Desing issue: Invalid date format - non-existent date on non-leap year
 Sending request via **POST, PATCH, PUT** where checkin date is 2026-02-29 (non-leap year) returns 200 and moves checkin date to 2026-03-01
 **!!!** Same problem persists for checkout date too
