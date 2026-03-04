@@ -5,6 +5,7 @@ Also, I will document all the bugs that will be found in this API both on Jira a
 
 
 # **Found bugs section**
+# _________AUTHORIZATION_________________________________________
 ## Design issue: Incosistent handling of errors in authorization module
 API uses different formats of handling bad requests on one method
 In **POST Auth method** if client sent request with body
@@ -18,6 +19,7 @@ handling of error is inconsistent: server responds with **200 - OK** status and 
 ### Right handling
 In both scenarios server obligied to return a standardized error object with a **4xx** status code
 
+# _________DATE FIELD________________________________________________________
 ## Bug: Invalid date format - empty strings
 Sending empty strings in fields "checkin" and "checkout" via **PATCH, POST or PUT** methods that includes object:
 Same issue persists for null value
@@ -146,4 +148,39 @@ Server returns **200 - OK** and moves checkin date
         "checkin": "2026-03-01",
         "checkout": "2026-03-05"
     },
+```
+
+# _________PRICE FIELD________________________________________________________
+## Bug: Invalid price format - 0 zero
+Sending request via **POST, PATCH, PUT** where price is 0 returns status code 200 and saves corrupt booking
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": 0,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking:
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": 0,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
 ```
