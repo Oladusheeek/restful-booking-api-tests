@@ -85,3 +85,24 @@ However, server returns **200 - OK** and saves corrupt booking:
         "checkout": "0NaN-aN-aN"
     },
 ```
+
+## Desing issue: Invalid date format - non-existent date on non-leap year
+Sending request via **POST, PATCH, PUT** where checkin date is 2026-02-29 (non-leap year) returns 200 and moves checkin date to 2026-03-01
+**!!!** Same problem persists for checkout date too
+### Payload sent
+```
+    "bookingdates": {
+        "checkin": "2026-02-29",
+        "checkout": "2026-03-05"
+    },
+```
+### Expected result 
+Expect server to return status code **400 - Bad request**
+### Actual result
+Server returns **200 - OK** and moves checkin date
+```
+    "bookingdates": {
+        "checkin": "2026-03-01",
+        "checkout": "2026-03-05"
+    },
+```
