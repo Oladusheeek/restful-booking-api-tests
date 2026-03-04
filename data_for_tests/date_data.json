@@ -28,5 +28,29 @@
     "checkin_date": "2026-06-20",
     "checkout_date": "2026-06-10",
     "expected_status": 400
+  },
+  {
+    "test_case": "Zero duration - same checkin and checkout",
+    "checkin_date": "2026-05-01",
+    "checkout_date": "2026-05-01",
+    "expected_status": 400 
+  },
+  {
+    "test_case": "Invalid type - numbers instead of strings",
+    "checkin_date": 20260501,
+    "checkout_date": 20260515,
+    "expected_status": 400
+  },
+  {
+    "test_case": "Non-existent date - Leap year check (Feb 29 on non-leap year)",
+    "checkin_date": "2026-02-29",
+    "checkout_date": "2026-03-05",
+    "expected_status": 400
+  },
+  {
+    "test_case": "Missing fields - null values",
+    "checkin_date": null,
+    "checkout_date": null,
+    "expected_status": 400
   }
 ]
