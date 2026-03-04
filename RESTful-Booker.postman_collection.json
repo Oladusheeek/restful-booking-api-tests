@@ -1101,7 +1101,8 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  ""
+                  "pm.variables.set(\"firstname_fixed\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));\r",
+                  "pm.variables.set(\"lastname_fixed\", pm.variables.replaceIn(\"{{$randomLastName}}\"));"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1130,7 +1131,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : 123,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "raw": "{\r\n    \"firstname\" : \"{{firstname_fixed}}\",\r\n    \"lastname\" : \"{{lastname_fixed}}\",\r\n    \"totalprice\" : 123,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1206,7 +1207,8 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  ""
+                  "pm.variables.set(\"firstname_fixed\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));\r",
+                  "pm.variables.set(\"lastname_fixed\", pm.variables.replaceIn(\"{{$randomLastName}}\"));"
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -1240,7 +1242,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : 345,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "raw": "{\r\n    \"firstname\" : \"{{firstname_fixed}}\",\r\n    \"lastname\" : \"{{lastname_fixed}}\",\r\n    \"totalprice\" : 345,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1302,6 +1304,18 @@
                 "packages": {},
                 "requests": {}
               }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.set(\"firstname_fixed\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));\r",
+                  "pm.variables.set(\"lastname_fixed\", pm.variables.replaceIn(\"{{$randomLastName}}\"));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
             }
           ],
           "protocolProfileBehavior": {
@@ -1330,7 +1344,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"firstname\" : \"{{$randomFirstName}}\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Option 2\"\r\n}",
+              "raw": "{\r\n    \"firstname\" : \"{{firstname_fixed}}\",\r\n    \"lastname\" : \"{{lastname_fixed}}\",\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{checkin_date}}\",\r\n        \"checkout\" : \"{{checkout_date}}\"\r\n    },\r\n    \"additionalneeds\" : \"Option 2\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
