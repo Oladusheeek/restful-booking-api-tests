@@ -20,9 +20,10 @@ In both scenarios server obligied to return a standardized error object with a *
 
 ## Bug: Invalid date format - empty strings
 Sending empty strings in fields "checkin" and "checkout" via **PATCH, POST or PUT** methods that includes object:
-
+Same issue persists for null value
 ### Payload sent
 `"bookingdates":{"checkin":"","checkout":""}`
+`"bookingdates":{"checkin": null,"checkout": null}`
 ### Expected result
 Expect server to return status code **400 - Bad request**.
 ### Actual result
@@ -62,6 +63,26 @@ However, server returns **200 - OK** and saves corrupt booking:
 ```
     "bookingdates": {
         "checkin": "2026-06-20",
+        "checkout": "0NaN-aN-aN"
+    },
+```
+
+## Bug: Invalid date format - numbers instead of strings
+Sending request via **POST, PATCH, PUT** where dates are random numbers returns 200 and saves corrupt data.
+### Payload sent
+```
+    "bookingdates": {
+        "checkin": "20260501",
+        "checkout": "20260515"
+    },
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking:
+```
+    "bookingdates": {
+        "checkin": "0NaN-aN-aN",
         "checkout": "0NaN-aN-aN"
     },
 ```
