@@ -376,9 +376,8 @@ Sending request via **POST, PATCH, PUT** where price is `"totalprice": 150.5` or
 ### Expected result
 Expect server to return status code **400 - Bad request**
 ### Actual result
-However, server returns various results for each endpoint and with PATCH method it saves corrupt booking
+However, server returns status code 200 and saves booking with price that is different from request's
 ```
-PATCH RESPONSE:
 {
     "firstname": "Jenna",
     "lastname": "Ortega",
@@ -391,3 +390,44 @@ PATCH RESPONSE:
     "additionalneeds": "Breakfast"
 }
 ```
+### Right handling
+If price is always an integer, then server should return status code **400 - Bad request** for such requests and do NOT save any data. If we consider price being float value, then server should correctly handle decimal numbers in `totalprice` field.
+
+## Design issue: Price field - array of numbers value
+Sending request via **POST, PATCH, PUT** where price is array of numbers returns status code 200 and saves booking only with the first item in array if `totalprice` field
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": [
+        150,
+        50
+    ],
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns status code 200 and saves booking only with the first item in array if `totalprice` field
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": 150,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Right handling
+Server obligated to return **400 - Bad request** and do not save any data.
