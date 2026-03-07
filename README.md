@@ -356,3 +356,38 @@ However, server returns **200 - OK** and saves corrupt booking with price being 
     "additionalneeds": "Breakfast"
 }
 ```
+
+## Design issue: Price field - dot and coma decimal values
+Sending request via **POST, PATCH, PUT** where price is `"totalprice": 150.5` or `"totalprice": "150,50"`, returns status code 200 and saves booking, but decimal value being cut out and string value converts to number which can result in data ambiguity
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": "150,50",
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns various results for each endpoint and with PATCH method it saves corrupt booking
+```
+PATCH RESPONSE:
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": 150,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
