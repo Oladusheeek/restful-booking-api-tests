@@ -252,3 +252,37 @@ However, server returns **200 - OK** and saves corrupt booking:
     "additionalneeds": "Breakfast"
 }
 ```
+
+## Bug: Invalid price format - null value
+Sending request via **POST, PATCH, PUT** where price is null returns status code 200 and saves corrupt booking
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": true,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking:
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": null,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
