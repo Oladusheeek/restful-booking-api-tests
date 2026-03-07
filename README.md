@@ -151,6 +151,40 @@ Server returns **200 - OK** and moves checkin date
 ```
 
 # _________PRICE FIELD________________________________________________________
+## Bug: Invalid price format - 0 zero
+Sending request via **POST, PATCH, PUT** where price is 0 returns status code 200 and saves corrupt booking
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": 0,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking:
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": 0,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+
 ## Bug: Invalid price format - empty string
 Sending request via **POST, PATCH, PUT** where price is empty string("") returns status code 200 and saves corrupt booking
 ### Payload sent
@@ -185,14 +219,14 @@ However, server returns **200 - OK** and saves corrupt booking:
 }
 ```
 
-## Bug: Invalid price format - 0 zero
-Sending request via **POST, PATCH, PUT** where price is 0 returns status code 200 and saves corrupt booking
+## Bug: Invalid price format - boolean value
+Sending request via **POST, PATCH, PUT** where price is boolean returns status code 200 and saves corrupt booking
 ### Payload sent
 ```
 {
     "firstname": "Jenna",
     "lastname": "Ortega",
-    "totalprice": 0,
+    "totalprice": true,
     "depositpaid": true,
     "bookingdates": {
         "checkin": "2026-02-26",
@@ -209,7 +243,7 @@ However, server returns **200 - OK** and saves corrupt booking:
 {
     "firstname": "Jenna",
     "lastname": "Ortega",
-    "totalprice": 0,
+    "totalprice": null,
     "depositpaid": true,
     "bookingdates": {
         "checkin": "2026-02-26",
