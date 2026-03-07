@@ -288,3 +288,37 @@ PATCH RESPONSE:
     "additionalneeds": "Breakfast"
 }
 ```
+
+## Bug: Invalid price format - string with numbers written in words
+Sending request via **POST, PATCH, PUT** where price is string returns status code 200 and saves corrupt booking
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": "one hundred fifty",
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking with price being null value:
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": null,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
