@@ -322,3 +322,37 @@ However, server returns **200 - OK** and saves corrupt booking with price being 
     "additionalneeds": "Breakfast"
 }
 ```
+
+## Bug: Invalid price format - negative number
+Sending request via **POST, PATCH, PUT** where price is negative number returns status code 200 and saves corrupt booking
+### Payload sent
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": -150,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
+### Expected result
+Expect server to return status code **400 - Bad request**
+### Actual result
+However, server returns **200 - OK** and saves corrupt booking with price being negative value:
+```
+{
+    "firstname": "Jenna",
+    "lastname": "Ortega",
+    "totalprice": -150,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2026-02-26",
+        "checkout": "2026-03-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+```
