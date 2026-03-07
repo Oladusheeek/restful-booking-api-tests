@@ -253,14 +253,15 @@ However, server returns **200 - OK** and saves corrupt booking:
 }
 ```
 
-## Bug: Invalid price format - null value
-Sending request via **POST, PATCH, PUT** where price is null returns status code 200 and saves corrupt booking
+## Design issue: Incosistent handling of errors - null value
+Sending request via **POST, PATCH, PUT** where price is null returns status code 500 for POST or 400 for PUT.
+For PATCH API responses with 200 status code and saves corrupt booking
 ### Payload sent
 ```
 {
     "firstname": "Jenna",
     "lastname": "Ortega",
-    "totalprice": true,
+    "totalprice": null,
     "depositpaid": true,
     "bookingdates": {
         "checkin": "2026-02-26",
@@ -272,8 +273,9 @@ Sending request via **POST, PATCH, PUT** where price is null returns status code
 ### Expected result
 Expect server to return status code **400 - Bad request**
 ### Actual result
-However, server returns **200 - OK** and saves corrupt booking:
+However, server returns various results for each endpoint and with PATCH method it saves corrupt booking
 ```
+PATCH RESPONSE:
 {
     "firstname": "Jenna",
     "lastname": "Ortega",
