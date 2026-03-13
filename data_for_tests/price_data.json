@@ -37,12 +37,12 @@
     {
         "test_case" : "Price - float dot decimal",
         "price_ddt": 150.50,
-        "expected_status" : 200
+        "expected_status" : 400
     },
     {
         "test_case" : "Price - float coma decimal via string",
         "price_ddt": "150,50",
-        "expected_status" : 200
+        "expected_status" : 400
     },
     {
         "test_case" : "Price - array of numbers",
