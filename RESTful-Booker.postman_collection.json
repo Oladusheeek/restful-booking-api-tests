@@ -537,7 +537,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\" : \"admin\",\r\n    \"password\" : \"password123\"\r\n}",
+              "raw": "{\r\n    \"username\" : \"admin123\",\r\n    \"password\" : \"password123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1819,6 +1819,373 @@
               "pm.variables.set(\"formatted_price\", formattedPrice);    // with the string arguments"
             ]
           }
+        }
+      ]
+    },
+    {
+      "name": "E2E - Search by name",
+      "item": [
+        {
+          "name": "Get Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Response is string\", function() {\r",
+                  "    var jsonData = pm.response.json()\r",
+                  "    pm.expect(jsonData.token).to.be.a(\"string\")\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Save token to variables\", function () {\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData.token).to.be.a(\"string\");\r",
+                  "    pm.environment.set(\"authToken\", jsonData.token)\r",
+                  "})\r",
+                  "\r",
+                  "let hasFailures = Object.values(tests).includes(false);\r",
+                  "\r",
+                  "if (hasFailures) {\r",
+                  "    console.error(\"Scenario was interrupted due to errors: \" + pm.info.requestName);\r",
+                  "    postman.setNextRequest(null);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.variables.unset(\"responseTimeLimit\");"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\" : \"admin\",\r\n    \"password\" : \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Save name to variables\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"name\", jsonData.booking.firstname);",
+                  "});",
+                  "",
+                  "pm.test(\"Check first name is correct\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var requestBody = JSON.parse(pm.request.body.raw);",
+                  "    pm.expect(jsonData.booking.firstname).to.eql(requestBody.firstname)",
+                  "})",
+                  "",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_POST\"))",
+                  "",
+                  "pm.test(\"JSON validation schema\", function () {",
+                  "    pm.response.to.have.jsonSchema(schema);",
+                  "});",
+                  "",
+                  "let hasFailures = Object.values(tests).includes(false);",
+                  "",
+                  "if (hasFailures) {",
+                  "    console.error(\"Scenario was interrupted due to errors: \" + pm.info.requestName);",
+                  "    postman.setNextRequest(null);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\" : \"QA_TU123\",\r\n    \"lastname\" : \"{{$randomLastName}}\",\r\n    \"totalprice\" : 111,\r\n    \"depositpaid\" : true,\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"2026-03-15\",\r\n        \"checkout\" : \"2026-03-20\"\r\n    },\r\n    \"additionalneeds\" : \"Breakfast\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get booking by name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Save ID from 'Get by Name'\", function (){\r",
+                  "    var jsonData = pm.response.json();\r",
+                  "    pm.expect(jsonData).to.be.an(\"array\").that.is.not.empty;\r",
+                  "    pm.expect(jsonData.length, \"No bookings find for this name\").to.be.above(0);\r",
+                  "    pm.environment.set(\"bookingID\", jsonData[0].bookingid)\r",
+                  "})\r",
+                  "\r",
+                  "let hasFailures = Object.values(tests).includes(false);\r",
+                  "\r",
+                  "if (hasFailures) {\r",
+                  "    console.error(\"Scenario was interrupted due to errors: \" + pm.info.requestName);\r",
+                  "    postman.setNextRequest(null);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname={{name}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "{{name}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.expect(pm.response.code).to.eql(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Date has right format\", function() {\r",
+                  "    var dateRegex = /^\\d{4}-\\d{2}-\\d{2}$/;\r",
+                  "    pm.expect(jsonData.bookingdates.checkin).to.match(dateRegex);\r",
+                  "    pm.expect(jsonData.bookingdates.checkout).to.match(dateRegex);\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Additional needs is 'Late checkout'\", function () {\r",
+                  "    pm.expect(jsonData.additionalneeds).to.eql(\"Late checkout\");\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"totalprice is '111'\", function () {\r",
+                  "    pm.expect(jsonData.totalprice).to.eql(111);\r",
+                  "})\r",
+                  "\r",
+                  "const schema = JSON.parse(pm.collectionVariables.get(\"booking_schema_PUT/PATCH\"));\r",
+                  "\r",
+                  "pm.test(\"Response body mathches schema\", function() {\r",
+                  "    pm.response.to.have.jsonSchema(schema);\r",
+                  "})\r",
+                  "\r",
+                  "let hasFailures = Object.values(tests).includes(false);\r",
+                  "\r",
+                  "if (hasFailures) {\r",
+                  "    console.error(\"Scenario was interrupted due to errors: \" + pm.info.requestName);\r",
+                  "    postman.setNextRequest(null);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "accept": true
+            }
+          },
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"additionalneeds\" : \"Late checkout\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            },
+            "description": "# **Bug description:**\n\nSending empte strings in fields \"checkin\" and \"checkout\" via PATCH method that includes object:\n\n### _Payload sent_\n\n`\"bookingdates\":{\"checkin\":\"\",\"checkout\":\"\"}`\n\n### _Expected result_\n\nExpect server to return status code 400 - Bad request.\n\n### _Actual result_\n\nHowever, server returns _200 OK_ and saves corrupt data with NaNs:  \n`\"bookingdates\": { \"checkin\": \"0NaN-aN-aN\", \"checkout\": \"0NaN-aN-aN\" }`"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function() {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "})"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingID}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingID}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
