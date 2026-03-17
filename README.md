@@ -74,8 +74,8 @@ Sending request via **POST, PATCH, PUT** where dates are random numbers returns 
 ### Payload sent
 ```
     "bookingdates": {
-        "checkin": "20260501",
-        "checkout": "20260515"
+        "checkin": 20260501,
+        "checkout": 20260515
     },
 ```
 ### Expected result
@@ -151,7 +151,7 @@ Server returns **200 - OK** and moves checkin date
 ```
 
 # _________PRICE FIELD________________________________________________________
-## Bug: Invalid price format - 0 zero
+## Bug: Invalid price format - 0 (zero)
 Sending request via **POST, PATCH, PUT** where price is 0 returns status code 200 and saves corrupt booking
 ### Payload sent
 ```
